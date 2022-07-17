@@ -26,8 +26,11 @@ contract ZombieFactory {
     * o padrao para variaveis nos parametros de function
     * para se diferenciar de variavies de globais
     * eh que elas comecem com "_variavel"
+    * esta function eh private, entao o patrao para
+    * funcoes privadas eh que o nome dela seja iniciada
+    * com "_" e private no acesso
     */
-    function createZombie(string _name, uint _dna) {
+    function _createZombie(string _name, uint _dna) private {
         zombies.push(Zombie(_name, _dna));
     }
 
