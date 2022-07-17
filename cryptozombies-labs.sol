@@ -57,39 +57,46 @@ contract ZombieFactory {
     }
     
     
-    
+    /**
+    * function private que retorna um uint
+    * keccak256(_str) => eh uma function evm que recebe str && retorna um hash 256
+    * apos isso ele realiza um parser deste retorno para uint();
+    */
     function _generateRandomDna(string _str) private view returns (uint) {
         uint rand = uint(keccak256(_str));
         return rand % dnaModulus;
     }
-
-//6e91ec6b618bb462a4a6ee5aa2cb0e9cf30f7a052bb467b0ba58b8748c00d2e5
-keccak256("aaaab");
-
-//b1f078126895a1424524de5321b339ab00408010b7cf0e6ed451514981e58aa9
-keccak256("aaaac");
-
-Conversão de Tipos
-
-Algumas vezes você precisa converter tipos diferentes. Pegue por exemplo o seguinte:
-
-uint8 a = 5;
-uint b = 6;
-
-// lança um erro, porque a * b retorna um uint, não um uint8:
-uint8 c = a * b;
-
-// nós temos de converter b em uint8 para isso funcionar:
-uint8 c = a * uint8(b); 
-
-Logo acima, a * b retorna um uint, mas nós estamos tentando guardar o seu valor em um uint8, que potencialmente pode causar problemas. Ao converter-lo como um uint8, a conversão irá funcionar e o compilador não irá reclamar.
-
-   function createRandomZombie(string _name) public {
-        uint randDna;
-        randDna = _generateRandomDna(_name);
-        _createZombie(_name, randDna);
-    }
     
+    /**
+    * exemplos da function evm keccak256();
+    * 
+    *   keccak256("aaaab");
+    *   #6e91ec6b618bb462a4a6ee5aa2cb0e9cf30f7a052bb467b0ba58b8748c00d2e5  
+    *
+    *   keccak256("aaaac");
+    *   #b1f078126895a1424524de5321b339ab00408010b7cf0e6ed451514981e58aa9
+    */
+
+    /**
+    *    Conversão de Tipos
+    *
+    *    Algumas vezes você precisa converter tipos diferentes. Pegue por exemplo o seguinte:
+    *    uint8 a = 5;
+    *    uint b = 6;
+    *
+    *    // lança um erro, porque a * b retorna um uint, não um uint8:
+    *    uint8 c = a * b;
+    *
+    *    // nós temos de converter b em uint8 para isso funcionar:
+    *    uint8 c = a * uint8(b); 
+    *
+    *    Logo acima, a * b retorna um uint, mas nós estamos tentando guardar o seu valor em um uint8, que potencialmente pode causar problemas. Ao converter-lo como um uint8, a conversão irá funcionar e o compilador não irá reclamar.
+    */
+    
+    /**
+    * criada function publica onde ela chama as functions
+    * privadas que realizam a geracao e a criacao do zombie;
+    */
     function createRandomZombie(string _name) public {
         uint randDna = _generateRandomDna(_name);
         _createZombie(_name, randDna);
