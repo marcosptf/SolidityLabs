@@ -1,21 +1,34 @@
+pragma solidity ^0.4.19;
+
 /**
-https://cryptozombies.io/en/lesson/1/chapter/6
-
+* contrato fabrica de Zombie
 */
-pragma solidity >=0.5.0 <0.6.0;
-
 contract ZombieFactory {
 
+    //variaveis com as caracteristicas de dna
     uint dnaDigits = 16;
     uint dnaModulus = 10 ** dnaDigits;
 
+    //struct com as caracteristicas do zombie
     struct Zombie {
         string name;
         uint dna;
     }
 
-    // start here
+    //aqui estamos declarando uma variavel array
+    //do tipo structs de acesso public
+    Zombie[] public zombies;
+
+    /**
+    * function publica para criacao de zombies
+    * que recebe 2 variavies publicas do contrato
+    * e elas sao atribuidas para o array de zombies;
+    * o padrao para variaveis nos parametros de function
+    * para se diferenciar de variavies de globais
+    * eh que elas comecem com "_variavel"
+    */
+    function createZombie(string _name, uint _dna) {
+        zombies.push(Zombie(_name, _dna));
+    }
 
 }
-
-
