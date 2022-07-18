@@ -28,7 +28,8 @@ function whatIsMyNumber() public view returns (uint) {
   return favoriteNumber[msg.sender];
 }
 
-*/
-
+/**
 Neste exemplo trivial, qualquer um pode chamar a função setMyNumber e guardar um uint em nosso contrato, que será amarrado ao seu endereço. Então quando eles chamarem a função whatIsMyNumber, seria retornado o uint que eles guardaram.
 Usar o msg.sender fornece à você a segurança do blockchain do Ethereum - a única maneira de alguém modificar o dado de outra pessoas seria roubando a chave privada associada ao endereço no Ethereum.
+*/
+
