@@ -53,4 +53,98 @@ Estamos de volta a zombiefeeding.sol, uma vez que este foi o primeiro lugar que 
 
 
 
+Capítulo 8: De Volta ao Ataque!
+
+Chega de refatoração - de volta ao zombieattack.sol.
+
+Vamos continuar a definição da nossa função attack, agora que nós temos a função modificadora ownerOf para usar.
+Vamos testar
+
+    Adicione a função modificadora ownerOf em attack para ter certeza que o chamador é o dono do _zombieId.
+
+    A primeira coisa que a nossa função deve fazer é obter um ponteiro do tipo storage para ambos os zumbis e então podemos interagir mais facilmente com eles:
+
+    a. Declare um Zombie storage chamado myZombie, e atribua igual a zombies[_zombieId].
+
+    b. Declare um Zombie storage chamado enemyZombie, e atribua igual a zombies[_targetId].
+
+    Vamos usar o número aleatório entre 0 e 99 para determinar o resultado da nossa batalha. Então declare um uint chamado rand, e atribua o valor igual ao resultado da função randMod com 100 como argumento.
+
+
+Capítulo 9: Zumbi Vence e Perde
+
+Para o nosso jogo zumbi, queremos manter o registro de quantas batalhas os nossos zumbis ganharam e perderam. Desta maneira podemos ter um quadro com os líderes no jogo.
+
+Poderíamos guardar esse dado de diferentes maneiras em nossa DApp - como mapeamentos usando mapping, em uma struct, ou na própria estrutura Zombie.
+
+Cada maneira tem as suas vantagens e desvantagens dependendo de como iremos interagir com o dado. Neste tutorial, vamos guardar os status em nossa estrutura Zombie por simplicidade, e chamá-las winCount e lossCount.
+
+Então vamos voltar para zombiefactory.sol, e adicionar estas propriedades para a nossa estrutura Zombie.
+Vamos testar
+
+    Modifique a nossa estrutura Zombie para ter duas propriedades a mais:
+
+    a. winCount, com uint16
+
+    b. lossCount, também com uint16
+
+        Nota: Lembre-se, uma vez que podemos empacotar uints dentro das estruturas, nós queremos usar os menores uints que pudermos. Um uint8 é muito pequeno, uma vez que 2^8 = 256 - se nossos zumbis atacarem uma vez por dia, eles podem estourar esse valor em um ano. Mas 2^16 é 65536 - então ao menos que o usuário ganhe ou perca a cada dia em 179 anos, estaremos seguros.
+
+    Agora que temos novas propriedades em nossa estrutura Zombie, precisamos mudar a definição da função em _createZombie().
+
+    Altere a definição da criação de zumbi então a cada novo zumbi criado este começa com 0 vitórias e 0 derrotas.
+
+    zombiefactory.sol
+    zombieattack.sol
+    zombiehelper.sol
+    zombiefeeding.sol
+    ownable.sol
+
+
+
+Capítulo 10: Vitória Zumbi 😄
+
+Agora que temos um winCount e lossCount, podemos atualizá-los dependendo de qual zumbi venceu a luta.
+
+No capítulo 6 nós calculamos um número aleatório entre 0 e 100. Agora vamos usar este número para determinar quem vence a luta, e atualizar os nossos status de acordo.
+Vamos testar
+
+    Crie uma declaração if que verifica se rand é menor que ou igual a attackVictoryProbability.
+
+    Se esta condição for verdadeira, nosso zumbi venceu! Então:
+
+    a. Incremente myZombie winCount.
+
+    b. Incremente myZombie level. (Subiu um nível!!!!!!!)
+
+    c. Incremente enemyZombie lossCount. (Perdedor!!!!!! 😫 😫 😫)
+
+    d. Execute a função feedAndMultiply. Verifique zombiefeeding.sol para ver sintaxe de como chamá-lo. Para o terceiro argumento (_species), passe o valor "zombie". (No momento isto não faz nada, mas para mais tarde quando adicionarmos funcionalidades extras para criar zumbis baseados em zumbis).
+
+
+Capítulo 11: Derrota Zumbi 😞
+
+Agora que nós codificamos o que acontece quando o seu zumbi vence, vamos resolver o que acontece quando estes são derrotados.
+
+Em nosso jogo, quando zumbis são derrotados, eles não perdem nível - eles simplesmente incrementam seus lossCount, e seus resfriamentos são ativados então eles devem esperar um dia antes de atacar novamente.
+
+Para implementar esta lógica, iremos precisar da declaração else.
+
+Declarações else são escritas como em JavaScript e muitas outras linguagens:
+
+if (zombieCoins[msg.sender] > 100000000) {
+  // Você esta rico!!!
+} else {
+  // Precisamos de mais ZombieCoins...
+}
+
+Vamos testar
+
+    Adicione uma declaração else. Se nosso zumbi perdeu:
+
+    a. Incremente myZombie lossCount.
+
+    b. Incremente enemyZombie winCount.
+
+    Fora da declaração else, execute o código da função _triggerCooldown em myZombie. Desta maneira o zumbi só poderá atacar uma vez por dia.
 
