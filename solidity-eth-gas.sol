@@ -93,3 +93,37 @@ uint32
 estão agrupados.
 */
 
+
+/**
+Economizando Gas com Funções 'View'
+
+Maravilha! Agora temos habilidades especiais para zumbis de alto nível, 
+dando aos seus donos um incentivo para subir os níveis. 
+Podemos adicionar mais destas funções depois se quisermos.
+
+Vamos adicionar mais uma função: 
+nossa DApp precisa de um método para ver todo o exército de zumbis do usuário - vamos chamá-la de 
+getZombiesByOwner.
+
+Esta função só irá precisar ler os dados do blockchain, então nós podemos 
+fazer uma função com a palavra reservada view. Que nós leva a um importante tópico ao falar sobre otimização de gas:
+Funções observação (View) não custam gas
+
+Funções view não custam gas algum quando são chamadas por um usuário externo.
+Isto porque funções view não mudam absolutamente nada no blockchain - elas somente leem os dados. 
+
+Então marcar uma função com a palavra reservada view diz a web.js que 
+esta função só precisa consultar o nó local do Ethereum para rodar a função, 
+e isso atualmente não cria transação alguma na blockchain (que teria que rodar em cada nó, e custar gas).
+
+Iremos cobrir a configuração da web3.js com um próprio nó mais tarde. 
+Mas agora a grande sacada é que você pode otimizar o gas utilizado na DApp pelos seus usuários 
+usando funções de somente leitura external view sempre que possível.
+
+Nota: Se uma função view é chamada internamente de uma outra função no mesmo 
+contrato essa não é uma função view, ela continuara custando gas. 
+Isto porque uma outra função já criou uma transação no Ethereum, 
+e ainda terá que validar em cada nó na rede. 
+Então funções view são de graça somente quando chamadas externamente.
+
+*/
