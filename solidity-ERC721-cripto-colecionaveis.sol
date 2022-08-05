@@ -95,6 +95,107 @@ Novamente, esta é muito fácil para implementar-mos, uma vez que já temos um m
 
     Nota: Lembre, uint256 é equivalente à uint. Estávamos usando uint em nosso código até agora, mas nós usamos uint256 aqui por que copiamos e colamos da especificação.
 
+Capítulo 4: Refatorando
 
+Opa! Nós introduzimos um erro em nosso código que vai impedir de compilar. Você percebeu?
+
+No capítulo anterior nós definimos a função chamada de ownerOf. Mas se você lembrar da Lição 4, nós também criamos um modifier (modificador) com o mesmo nome, ownerOf, em zombiefeeding.sol.
+
+Se você tentar compilar este código, o compilador irá retornar um erro dizendo que você não pode ter um modificador e uma função com o mesmo nome.
+
+Então devemos somente mudar o nome da função em ZombieOwnership para qualquer coisa?
+
+Não, não podemos fazer isso!!! Lembre-se, estamos usando o token padrão ERC721, que significa que outros contratos irão esperar que o nosso contrato tenha as funções com os nomes definidos exatamente. Isto é o que faz estes padrões úteis – se outro contrato sabe que nosso contrato é compatível com ERC721, este pode simplesmente conversar conosco sem a necessidade de saber qualquer coisa sobre as nossas decisões de implementação interna.
+
+Então significa que iremos ter que refatorar o nosso código da Lição 4 para mudar o nome do modifier para outra coisa.
+
+
+Capítulo 5: ERC721: Lógica de Transferência
+
+Ótimo, consertamos o conflito!
+
+Agora iremos continuar nossa implementação do ERC721 olhando na transferência de propriedade de uma pessoa para outra.
+
+Note que a especificação ERC721 tem duas maneiras diferentes de transferir tokens:
+
+function transfer(address _to, uint256 _tokenId) public;
+function approve(address _to, uint256 _tokenId) public;
+function takeOwnership(uint256 _tokenId) public;
+
+    A primeira forma é o dono do token chamar transfer com o address que ele quer transferir, e o _tokenId do token que ele quer transferir.
+
+    A segunda forma é o dono do token primeiro chama approve, e envia a mesma informação acima. O contrato então guarda quem esta aprovado para pegar o token, normalmente um mapping (uint256 => address). Então quando alguém chamar takeOwnership, o contrato checa se o msg.sender esta aprovado pelo dono para pegar o token, se estiver transfere o token para ele.
+
+Se você notar, ambos transfer e takeOwnership irão conter a mesma lógica de transferência, em ordem inversa. (Em um caso o remetente do token chama a função; na outra o destinatário do token a chama).
+
+Então faz sentido abstrairmos esta lógica em uma função privada, _transfer, que então será chamada por ambas funções. Desta maneira não precisamos repetir o mesmo código duas vezes.
+
+
+
+Capítulo 7: ERC721: Approve
+
+Agora, vamos implementar approve.
+
+Lembre-se, com approve / takeOwnership, a transferência acontece em 2 passos:
+
+    Você, o dono, chama approve e informa o address do novo dono, e o _tokenId que você quer ele pegue
+
+    O novo dono chama takeOwnership com o _tokenId, o contrato verifica para certeza que ele já foi aprovado, e então transfer a ele o token.
+
+Por que isto acontece em 2 chamadas de funções, precisamos de uma estrutura de dados para guardar quem esta sendo aprovado para que entre as chamadas das funções.
+
+
+Capítulo 8: ERC721: takeOwnership
+
+Ótimo, agora vamos terminar a nossa implementação do ERC721 com a última função! (Não se preocupe, ainda há a mais para cobrir na Lição 5 após isso 😉)
+
+A função final, takeOwnership, deve simplesmente verificar o msg.sender para ter certeza que foi aprovado para pegar este token / zumbi, e chamar _transfer se ok.
+
+
+
+Capítulo 9: Prevenindo Overflows
+
+Parabéns, isto conclui a nossa implementação do ERC721!
+
+Isso não foi tão difícil, foi? Um monte destas coisas em Ethereum soa complicado quando você ouve as pessoas falando, então a melhor maneira de entender é na verdade ir implementar você mesmo.
+
+Tenha em mente que isto é o mínimo de implementação. Existem recursos extras que queremos adicionar a nossa implementação, como algumas checagem extras para ter certeza que os usuários acidentalmente não transfiram os zumbis para o endereço 0 (que é conhecido como "queimando" um token – basicamente enviado para um endereço que ninguém tem a chave privada, essencialmente tornando-o irrecuperável). Ou colocar uma lógica básica de um leilão na própria DApp (Você consegue pensar em algumas maneiras de implementar-mos isto?)
+
+Mas queremos manter esta lição manejável, então fomos com a lógica de implementação mais básica. Se você quiser ver um exemplo de uma implementação mais à fundo, você pode dar uma olhada no contrato ERC721 do OpenZeppelin após este tutorial.
+Melhorias de segurança no contrato: Overflows e Underflows
+
+Vamos olhar para um dos principais recursos de segurança que você deve estar ciente ao escrever smart contracts: Prevenção de overflows e underflows.
+
+O que é um overflow (transbordamento) ?
+
+Digamos que você tem um uint8, que pode ter somente 8 bits. Isso significa que o maior número que podemos guardar é o binário 11111111 (ou um decimal, 2^8 - 1 = 255).
+
+De uma olhada no seguinte código. Qual é o number igual no final?
+
+uint8 number = 255;
+number++;
+
+Neste caso, nós causamos um "overflow" – então o number é contraintuitivamente igual a 0 mesmo após nós aumentarmos. (Se você adicionar 1 para um binário 11111111, ele restabelece de volta para 00000000, como um relógio indo de 23:59 para 00:00).
+
+Um "underflow" é parecido, onde se você subtrair 1 de um uint8 que é igual a 0, este agora é igual à 255 (porque uints são sem sinal, e não podem ser negativos).
+
+Enquanto não usamos uint8 aqui, parece improvável que o uint256 irá transbordar quando incrementarmos em 1 toda vez (2^256 é realmente um número grande), ainda é bom colocar proteções em nossos contratos então nossa DApp nunca terá um comportamento indesejável no futuro.
+Usando SafeMath
+
+Para prevenir isto, OpenZeppelin criou uma library (biblioteca) chamada SafeMath que previne estes erros por padrão.
+
+Mas antes de disso... O que é uma biblioteca?
+
+Uma biblioteca é tipo especial de contrato em Solidity. Uma das coisas que são úteis para anexar funções em tipos de dados nativos.
+
+Por exemplo, como a biblioteca SafeMath, podemos usar a sintaxe using SafeMath for uint256. A biblioteca SafeMath tem 4 funções – add (adição), sub (subtração), mul (multiplicação) e div (divisão). E como nós podemos acessar essas funções de uint256 conforme segue:
+
+using SafeMath for uint256;
+
+uint256 a = 5;
+uint256 b = a.add(3); // 5 + 3 = 8
+uint256 c = a.mul(2); // 5 * 2 = 10
+
+Vamos ver o que estas funções fazem no próximo capítulo, mas por agora vamos adicionar a biblioteca SafeMath em nosso contrato.
 
 
