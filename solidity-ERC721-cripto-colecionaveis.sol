@@ -34,5 +34,40 @@ Tokens ERC721_ não são intercambiáveis uma vez que cada um é suposto para se
 
 
 
+Capítulo 2: Padrão ERC721, Múltipla Herança
+
+Vamos dar uma olhada no padrão ERC721:
+
+contract ERC721 {
+  event Transfer(address indexed _from, address indexed _to, uint256 _tokenId);
+  event Approval(address indexed _owner, address indexed _approved, uint256 _tokenId);
+
+  function balanceOf(address _owner) public view returns (uint256 _balance);
+  function ownerOf(uint256 _tokenId) public view returns (address _owner);
+  function transfer(address _to, uint256 _tokenId) public;
+  function approve(address _to, uint256 _tokenId) public;
+  function takeOwnership(uint256 _tokenId) public;
+}
+
+Esta é a lista de métodos que precisamos implementar, que iremos fazer em partes nos próximos capítulos.
+
+Isso parece um monte, mas sinta-se sobrecarregado! Estamos aqui para guiar você.
+
+    Nota: O padrão ERC721 é atualmente um rascunho, e ainda não há oficialmente um acordo de implementação. Neste tutorial usamos a versão atual da biblioteca do OpenZeppelin, mas é possível que mude no futuro antes do lançamento oficial. Então considere esta uma possível implementação, mas não considere uma versão oficial dos tokens ERC721.
+
+Implementando um contrato de token
+
+Quando implementar um contrato de token, a primeira coisa que fazemos é copiar a interface para o nosso próprio arquivo Solidity e importá-lo. import "./erc721.sol";. Então nós teremos o nosso contrato herdando-o, e iremos sobrepor cada método com a definição da função.
+
+Mas espere – ZombieOwnership já esta herdando do ZombieAttack – como pode também herdar do ERC721?
+
+Para a nossa sorte em Solidity, seu contrato pode herdar de múltiplos contrato conforme segue:
+
+contract SatoshiNakamoto is NickSzabo, HalFinney {
+  // Meu deus, os segredos do universo foram revelados!
+}
+
+Como você pode ver, quando usando a múltipla herança, você pode separar os múltiplos contrato que você estar herdando com um vírgula, ,. Neste caso, nosso contrato esta herdando de NickSzabo e HalFinney.
+
 
 
