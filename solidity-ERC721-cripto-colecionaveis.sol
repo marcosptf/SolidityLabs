@@ -71,3 +71,30 @@ Como você pode ver, quando usando a múltipla herança, você pode separar os m
 
 
 
+Capítulo 3: balanceOf & ownerOf
+
+Ótimo, vamos mergulhar na implementação do ERC721!
+
+Já saímos na frente e copiamos uma casca vazia de todos as funções que você irá implementar nesta lição.
+
+Neste capítulos, iremos implementar os dois primeiros métodos: balanceOf e ownerOf.
+balanceOf
+
+  function balanceOf(address _owner) public view returns (uint256 _balance);
+
+Esta função simplesmente recebe um address, e retorna quantos tokens que o address tem.
+
+Em nosso caso, nossos "tokens" são Zumbis. Você lembra onde em nossa DApp nós guardamos quantos zumbis um dono tem?
+ownerOf
+
+  function ownerOf(uint256 _tokenId) public view returns (address _owner);
+
+Esta função recebe um token ID (em nosso caso, um ID Zumbi), e retorna o address da pessoa que o possui.
+
+Novamente, esta é muito fácil para implementar-mos, uma vez que já temos um mapping (mapeamento) em nossa DApp que guarda esta informação. Podemos implementar esta função em uma linha, só uma declaração de return.
+
+    Nota: Lembre, uint256 é equivalente à uint. Estávamos usando uint em nosso código até agora, mas nós usamos uint256 aqui por que copiamos e colamos da especificação.
+
+
+
+
