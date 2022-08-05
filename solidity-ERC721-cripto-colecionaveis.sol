@@ -199,3 +199,182 @@ uint256 c = a.mul(2); // 5 * 2 = 10
 Vamos ver o que estas funções fazem no próximo capítulo, mas por agora vamos adicionar a biblioteca SafeMath em nosso contrato.
 
 
+Capítulo 10: SafeMath Parte 2
+
+Vamos dar uma olhada no código por trás da SafeMath:
+
+library SafeMath {
+
+  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+    if (a == 0) {
+      return 0;
+    }
+    uint256 c = a * b;
+    assert(c / a == b);
+    return c;
+  }
+
+  function div(uint256 a, uint256 b) internal pure returns (uint256) {
+    // assert(b > 0); // Solidity automaticamente lança uma exceção quando dividindo por 0
+    uint256 c = a / b;
+    // assert(a == b * c + a % b); // Não há nenhum caso que isso não contenha
+    return c;
+  }
+
+  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+    assert(b <= a);
+    return a - b;
+  }
+
+  function add(uint256 a, uint256 b) internal pure returns (uint256) {
+    uint256 c = a + b;
+    assert(c >= a);
+    return c;
+  }
+}
+
+Primeiro nós temos a palavra reservada library (biblioteca) – bibliotecas são similares a contracts mas com poucas diferenças. Para nosso propósito, bibliotecas permitem-nos o uso da palavra reservada using, que automaticamente acrescenta todos os métodos da biblioteca em outro tipo de dado:
+
+using SafeMath for uint;
+// agora podemos usar estes métodos em qualquer uint
+uint test = 2;
+test = test.mul(3); // test agora é igual a 6
+test = test.add(5); // test agora é igual a 11
+
+Note que as funções mul e add cada uma requer 2 argumentos, mas quando nós declaramos using SafeMath for uint, o uint que chamamos a função (test) é automaticamente passado como o primeiro argumento.
+
+Vamos dar uma olhada no código por de trás de add para ver o que SafeMath faz:
+
+function add(uint256 a, uint256 b) internal pure returns (uint256) {
+  uint256 c = a + b;
+  assert(c >= a);
+  return c;
+}
+
+Basicamente add só adiciona 2 uints como +, mas este também contem uma declaração assert para ter certeza que a soma é maior do que a. Isto nos protege contra overflows.
+
+assert é similar o require, onde este irá lançar um erro se falso. A diferença entre assert e require é que require irá reembolsar o usuário o resto do seu gás quando a função falhar, enquanto que assert não irá. Então a maior parte do tempo você quer usar o require em seu código; assert é tipicamente usando quando algo de terrível houve com o código (como um uint transbordar).
+
+Então, simplesmente use, As funções add, sub, mul e div da SafeMath que fazem as 4 operações matemáticas básicas, mas lançam um erro se um overflow ou underflow ocorrer.
+Usando SafeMath em nosso código.
+
+Para prevenir overflow and underflow, podemos procurar por lugares em nosso código onde usamos +, -, *, or /, e substituí-los por add, sub, mul e div.
+
+Ex: Ao invés de fazer:
+
+myUint++;
+
+Nós deveríamos fazer:
+myUint = myUint.add(1);
+
+
+Capítulo 11: SafeMath Parte 3
+
+Ótimo, agora nossa implementação ERC721 esta segura de overflows & underflows!
+
+Voltando ao código que escrevemos em lições anteriores, existem uns poucos outros lugares onde o nosso código poderia estar vulnerável a overflows ou underflows.
+
+Por exemplo, em ZombieAttack nós temos:
+
+myZombie.winCount++;
+myZombie.level++;
+enemyZombie.lossCount++;
+
+Deveríamos prevenir overflows aqui também só para estar seguro. (É uma boa ideia em geral só usar SafeMath ao invés de usar operações matemáticas básicas. Talvez em versões futuras de Solidity estes estejam implementados por padrão, mas por agora nós temos que ter precaução extra com a segurança em nosso código).
+
+Porém temos um leve problema – winCount e lossCount são uint16, e level é um uint32. Então se nós usarmos o método add da SafeMath com estes argumentos, este não nos protegerão de overflows uma vez que isto irá converter estes tipos para uint256:
+
+function add(uint256 a, uint256 b) internal pure returns (uint256) {
+  uint256 c = a + b;
+  assert(c >= a);
+  return c;
+}
+
+// Se nós chamarmos `.add` em um `uint8`, este será convertido para um `uint256`.
+// Então este não terá um overflow em 2^8, uma vez que um valor 256 é valido para um `uint256`.
+
+Isto significa que teremos que implementar 2 bibliotecas a mais para prevenir overflows/underflows com os nossos uint16 e uint32. Iremos chamá-las de SafeMath16 e SafeMath32.
+
+O código será exatamente o mesmo que SafeMath, exceto todas instâncias de uint256 serão substituídas com uint32 ou uint16.
+
+Nós saímos na frente e implementamos o código pra você – vá em frente e veja em safemath.sol para ver o código.
+
+Agora precisamos implementar em ZombieFactory.
+
+
+Capítulo 12: SafeMath Parte 4
+
+Ótimo, agora podemos implementar SafeMath em todos os tipos de uint que usamos em nossa DApp!
+
+Vamos consertar todos esse potências problemas em ZombieAttack. (Ainda há um zombies[_zombieId].level++; que precisa ser consertado em ZombieHelper, mas nós cuidamos deste pra você então nós não precisamos de um capítulo extra 😉).
+
+
+
+Capítulo 13: Comentários
+
+O código Solidity para o nosso jogo zumbi finalmente terminou!
+
+Nas próximas lições, iremos olhar em como implantar o código no Ethereum, e como interagir com ele usando a Web3.js.
+
+Mas uma coisa final antes de deixá-lo ir na Lição 5: Vamos falar sobre comentando o seu código.
+Sintaxe para comentários
+
+Comentando um código em Solidity e como em JavaScript. Você já viu alguns exemplos de uma simples linha de comentário nas lições do CryptoZombies.
+
+// Este é um comentário de uma linha. É tipo uma nota própria (ou para outros)
+
+Somente adicione duas // em qualquer lugar e você esta comentando. É tão fácil que você deveria fazer toda hora.
+
+Mas eu entendo você – algumas vezes uma linha não é o suficiente. Você nasceu um escritor, afinal!
+
+Assim, nós também temos comentários multi-linhas:
+
+contract CryptoZombies {
+  /* Este é um comentário multi-linha. Eu gostaria de agradecer à todos vocês
+    que usaram o seu tempo para tentar este curso de programação.
+    Eu sei que é grátis para todos vocês, e continuará grátis
+    para sempre, mas ainda colocamos nossos corações e almas para fazer
+    isto tão bom quanto o possível.
+
+    Saiba que este ainda é o início do desenvolvimento do Blockchain.
+    Chegamos muito longe, mas ainda existem várias maneiras de fazer esta
+    comunidade melhor. Se cometemos um erro em algum lugar, você pode
+    nos ajudar e abrir um pull request aqui:
+    https://github.com/loomnetwork/cryptozombie-lessons
+
+    Ou se você tiver algumas ideias, comentários, ou só dizer um Olá –
+    envie pela nossa comunidade Telegram em https://t.me/loomnetworkdev
+  */
+}
+
+Em particular, é uma boa prática comentar o seu código para explicar o comportamento esperado de cada função em seu contrato. Desta maneira outro desenvolvedor (ou você, após seis meses de hiato de um projeto!) pode rapidamente ler e entender em alto nível o que seu código faz sem ter que ler o próprio código.
+
+O padrão na comunidade Solidity é usar o formato chamado natspec, que se parece com isso:
+
+/// @title Um contrato para operações básicas de matemática
+/// @author H4XF13LD MORRIS 💯💯😎💯💯
+/// @notice No momento, este contrato somente adiciona uma função de multiplicação
+contract Math {
+  /// @notice Multiplica dois números juntos
+  /// @param x o primeiro uint.
+  /// @param y o segundo uint.
+  /// @return z o produto de (x * y)
+  /// @dev Esta função não atualmente não checa por overflows
+  function multiply(uint x, uint y) returns (uint z) {
+    // Este é somente um comentário normal, e não sera lido pelo natspec
+    z = x * y;
+  }
+}
+
+@title e @author são simples.
+
+@notice explica para o usuário o que o contrato / função faz. @dev é para explicar detalhes extras para os desenvolvedores.
+
+@param e @return são para descrever o que cada parâmetro e valor de retorno da função fazem.
+
+Note que você não precisa ter que usar todas essas tags para cada função - todas as tags são opcionais. Mas pelo menos, deixa uma nota com @dev explicando o que cada função faz.
+
+
+
+
+
